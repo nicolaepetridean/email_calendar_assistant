@@ -1,0 +1,20 @@
+Hi,
+
+You've received a meeting request that needs your approval.
+
+📧 FROM: {original_from}
+📌 SUBJECT: {original_subject}{purpose_line}
+📝 SUMMARY: {summary}
+
+I've checked your calendar and found these available time slots:
+
+{slots}
+
+────────────────────────────────────────────
+To APPROVE, reply with:  APPROVE 1  (or APPROVE 2, APPROVE 3)
+To REJECT,  reply with:  REJECT
+────────────────────────────────────────────
+
+Approval ID: {approval_id}
+
+— AI Email & Calendar Assistant

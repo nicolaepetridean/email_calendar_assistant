@@ -1,0 +1,9 @@
+An urgent message requires your attention:
+
+FROM: {sender}
+SUBJECT: {subject}
+SUMMARY: {summary}
+
+Suggested action: {suggested_action}
+
+— AI Email & Calendar Assistant

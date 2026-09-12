@@ -1,0 +1,10 @@
+Thank you for reaching out!
+
+I'm happy to confirm that a meeting has been scheduled:
+
+  Date & Time: {start_str} – {end_str}
+
+A calendar invitation has been sent to you. Please feel free to reach
+out if you need to make any changes.
+
+Best regards

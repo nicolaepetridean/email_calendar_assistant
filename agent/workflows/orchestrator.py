@@ -7,6 +7,7 @@ from agent.ai.classifier import Classifier, ClassificationResult
 from agent.config import Config
 from agent.storage.database import log_event, mark_processed
 from agent.google.gmail_client import GmailClient
+from agent.templates import render
 
 logger = logging.getLogger(__name__)
 
@@ -168,12 +169,11 @@ class EmailOrchestrator:
         self.gmail.send_message(
             to=Config.MANAGER_EMAIL,
             subject=f"[URGENT] {result.summary[:60]}",
-            body=(
-                f"An urgent message requires your attention:\n\n"
-                f"FROM: {email_data['from']}\n"
-                f"SUBJECT: {email_data['subject']}\n"
-                f"SUMMARY: {result.summary}\n\n"
-                f"Suggested action: {result.suggested_action}\n\n"
-                f"— AI Email & Calendar Assistant"
+            body=render(
+                "urgent_notification",
+                sender=email_data["from"],
+                subject=email_data["subject"],
+                summary=result.summary,
+                suggested_action=result.suggested_action,
             ),
         )

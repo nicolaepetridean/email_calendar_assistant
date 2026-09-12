@@ -16,6 +16,7 @@ from agent.storage.database import (
     update_approval_thread,
 )
 from agent.google.gmail_client import GmailClient
+from agent.templates import render
 
 logger = logging.getLogger(__name__)
 
@@ -60,20 +61,14 @@ def _build_approval_email(
     meeting_purpose: Optional[str],
 ) -> str:
     purpose_line = f"\n📋 PURPOSE: {meeting_purpose}" if meeting_purpose else ""
-    return (
-        f"Hi,\n\n"
-        f"You've received a meeting request that needs your approval.\n\n"
-        f"📧 FROM: {original_from}\n"
-        f"📌 SUBJECT: {original_subject}{purpose_line}\n"
-        f"📝 SUMMARY: {summary}\n\n"
-        f"I've checked your calendar and found these available time slots:\n\n"
-        f"{format_slots(slots)}\n\n"
-        f"{'─' * 44}\n"
-        f"To APPROVE, reply with:  APPROVE 1  (or APPROVE 2, APPROVE 3)\n"
-        f"To REJECT,  reply with:  REJECT\n"
-        f"{'─' * 44}\n\n"
-        f"Approval ID: {approval_id}\n\n"
-        f"— AI Email & Calendar Assistant\n"
+    return render(
+        "approval_request",
+        original_from=original_from,
+        original_subject=original_subject,
+        purpose_line=purpose_line,
+        summary=summary,
+        slots=format_slots(slots),
+        approval_id=approval_id,
     )
 
 
@@ -190,14 +185,7 @@ class ApprovalFlow:
         self._gmail.send_message(
             to=sender_email,
             subject=f"Re: {approval.original_subject}",
-            body=(
-                f"Thank you for reaching out!\n\n"
-                f"I'm happy to confirm that a meeting has been scheduled:\n\n"
-                f"  Date & Time: {start_str} – {end_str}\n\n"
-                f"A calendar invitation has been sent to you. "
-                f"Please feel free to reach out if you need to make any changes.\n\n"
-                f"Best regards"
-            ),
+            body=render("meeting_confirmed", start_str=start_str, end_str=end_str),
             reply_to_message_id=approval.original_message_id,
         )
 
