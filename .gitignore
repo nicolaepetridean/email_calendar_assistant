@@ -1,0 +1,16 @@
+# Secrets — never commit these
+.env
+credentials/credentials.json
+credentials/token.json
+credentials/token.json.tmp
+
+# Runtime state
+data/
+*.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.coverage

@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  agent:
+    build: .
+    env_file: .env
+    volumes:
+      - ./credentials:/credentials
+      - ./data:/data
+    restart: unless-stopped
