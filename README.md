@@ -19,14 +19,32 @@ An autonomous agent that monitors a Gmail inbox, classifies incoming emails with
 ## Architecture
 
 ```
-main.py              polling loop, graceful shutdown
-  └── EmailOrchestrator   classify → label → action per email
-        ├── GmailClient       read, label, send via Gmail API
-        ├── CalendarClient    find free slots, create events via Calendar API
-        ├── Classifier        GPT-4o classification via Azure OpenAI
-        └── ApprovalFlow      approval email → APPROVE/REJECT → execute
-database.py          SQLite state: processed emails, pending approvals, audit log
-google_auth.py       OAuth token load + atomic refresh
+auth.py                       one-time OAuth setup script (run locally, not in Docker)
+
+agent/
+├── main.py                   polling loop, graceful shutdown, JSON logging
+├── config.py                 all config via env vars, fail-fast validate()
+│
+├── google/
+│   ├── auth.py               OAuth token load + atomic refresh
+│   ├── gmail_client.py       read, label, archive, flag, send via Gmail API
+│   └── calendar_client.py    find free slots (respects existing events), create events
+│
+├── ai/
+│   └── classifier.py         GPT-4o classification → label, urgency, auto_reply, is_invoice
+│
+├── workflows/
+│   ├── orchestrator.py       classify → label → action dispatcher per email
+│   └── approval_flow.py      approval email → APPROVE/REJECT → calendar event + confirm
+│
+├── storage/
+│   ├── database.py           SQLite: processed emails, pending approvals, audit log
+│   └── audit.py              CLI audit report (python -m agent.storage.audit)
+│
+└── templates/
+    ├── approval_request.txt  manager approval email body
+    ├── meeting_confirmed.txt reply to original sender on approval
+    └── urgent_notification.txt manager alert for URGENT+TASK emails
 ```
 
 ## Prerequisites
