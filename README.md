@@ -58,10 +58,17 @@ agent/
 
 ### 1 — Place Google credentials
 
+Two files are needed under `credentials/`:
+
+| File | How to obtain |
+|---|---|
+| `credentials.json` | Download from Google Cloud Console → APIs & Services → Credentials → your OAuth 2.0 Client ID |
+| `token.json` | Generated automatically by running `auth.py` (step 2 below) |
+
 ```
-email_demo/
-└── credentials/
-    └── credentials.json   ← downloaded from Google Cloud Console
+credentials/
+├── credentials.json   ← download from Google Cloud Console
+└── token.json         ← created by auth.py, do not commit
 ```
 
 ### 2 — Authenticate with Google (once, on your local machine)
@@ -74,7 +81,7 @@ TOKEN_PATH=credentials/token.json \
 python auth.py
 ```
 
-This opens a browser tab for OAuth consent. After approval, `credentials/token.json` is saved automatically.
+This opens a browser tab for OAuth consent. After approval, `credentials/token.json` is saved automatically. The agent refreshes the token on its own thereafter — you only need to re-run `auth.py` if the token is revoked.
 
 ### 3 — Configure environment
 
