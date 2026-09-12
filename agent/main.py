@@ -10,7 +10,7 @@ from agent.workflows.approval_flow import ApprovalFlow
 from agent.google.calendar_client import CalendarClient
 from agent.ai.classifier import Classifier, VALID_LABELS
 from agent.config import Config
-from agent.storage.database import init_db, is_processed, log_event
+from agent.storage.database import init_db, is_processed, log_event, mark_processed
 from agent.google.gmail_client import GmailClient
 from agent.google.auth import get_credentials
 from agent.workflows.orchestrator import EmailOrchestrator
@@ -117,6 +117,7 @@ def main() -> None:
                 except Exception as exc:
                     logger.error(f"[{msg_id}] Processing error: {exc}", exc_info=True)
                     log_event(msg_id, "PROCESSING_ERROR", {"error": str(exc)})
+                    mark_processed(msg_id, "ERROR", False, str(exc)[:200], "error")
 
         except BrokenPipeError:
             logger.warning("Broken pipe — reconnecting Google API clients")

@@ -33,6 +33,8 @@ class Config:
     # Set to "false" to label SALES_OUTREACH without sending a decline reply.
     AUTO_DECLINE_SALES: bool = os.getenv("AUTO_DECLINE_SALES", "true").lower() == "true"
 
+    API_RETRIES: int = int(os.getenv("API_RETRIES", "5"))
+
     @classmethod
     def validate(cls) -> None:
         """Fail fast with a clear, actionable message if required config is missing."""

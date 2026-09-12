@@ -13,12 +13,7 @@ import os
 import sys
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-SCOPES = [
-    "https://www.googleapis.com/auth/gmail.modify",
-    "https://www.googleapis.com/auth/gmail.send",
-    "https://www.googleapis.com/auth/gmail.labels",
-    "https://www.googleapis.com/auth/calendar",
-]
+from agent.google.auth import SCOPES
 
 CREDENTIALS_PATH = os.getenv("CREDENTIALS_PATH", "credentials/credentials.json")
 TOKEN_PATH = os.getenv("TOKEN_PATH", "credentials/token.json")

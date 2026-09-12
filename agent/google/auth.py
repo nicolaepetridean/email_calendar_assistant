@@ -32,6 +32,12 @@ def get_credentials() -> Credentials:
             "Run auth.py to authenticate first."
         )
 
+    if creds.expired and not creds.refresh_token:
+        sys.exit(
+            f"Token at {Config.TOKEN_PATH!r} is expired and has no refresh token. "
+            "Run auth.py to re-authenticate."
+        )
+
     if creds.expired and creds.refresh_token:
         try:
             logger.info("Refreshing expired Google credentials")

@@ -8,8 +8,6 @@ from agent.config import Config
 
 logger = logging.getLogger(__name__)
 
-_API_RETRIES = 5
-
 
 def _parse_google_dt(value: str) -> datetime:
     """Parse a Google Calendar dateTime or all-day date string to UTC datetime."""
@@ -50,7 +48,7 @@ class CalendarClient:
                 singleEvents=True,
                 orderBy="startTime",
             )
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         return result.get("items", [])
 
@@ -135,7 +133,7 @@ class CalendarClient:
         event = (
             self._service.events()
             .insert(calendarId=self._calendar_id, body=body, sendUpdates="all")
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         logger.info(f"Created calendar event: {event.get('htmlLink')}")
         return event["id"]

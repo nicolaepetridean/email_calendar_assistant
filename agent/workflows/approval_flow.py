@@ -120,11 +120,16 @@ class ApprovalFlow:
             meeting_purpose=classification.meeting_purpose,
         )
 
-        _, thread_id = self._gmail.send_message(
-            to=Config.MANAGER_EMAIL,
-            subject=subject,
-            body=body,
-        )
+        try:
+            _, thread_id = self._gmail.send_message(
+                to=Config.MANAGER_EMAIL,
+                subject=subject,
+                body=body,
+            )
+        except Exception as exc:
+            logger.error(f"Failed to send approval request to manager: {exc}")
+            resolve_approval(approval_id, ApprovalDecision.REJECT)
+            raise
         update_approval_thread(approval_id, thread_id)
         log_event(email_data["id"], "APPROVAL_REQUESTED", {
             "approval_id": approval_id,
@@ -158,12 +163,17 @@ class ApprovalFlow:
     # ------------------------------------------------------------------
 
     def _execute_approval(self, approval: PendingApproval, slot_number: int) -> None:
-        # Resolve first so a crash after this point does not create a duplicate event.
-        resolve_approval(approval.id, ApprovalDecision.APPROVE)
-
         slots = approval.proposed_slots
-        idx = max(0, min(slot_number - 1, len(slots) - 1))
-        chosen = slots[idx]
+        if slot_number < 1 or slot_number > len(slots):
+            logger.warning(
+                f"Manager replied APPROVE {slot_number} but only {len(slots)} slot(s) "
+                f"were offered — defaulting to slot 1."
+            )
+            slot_number = 1
+        chosen = slots[slot_number - 1]
+
+        # Resolve first — prevents a duplicate event if the process crashes and restarts.
+        resolve_approval(approval.id, ApprovalDecision.APPROVE)
 
         start_dt = datetime.fromisoformat(chosen["start"])
         end_dt = datetime.fromisoformat(chosen["end"])
@@ -182,12 +192,17 @@ class ApprovalFlow:
 
         start_str = start_dt.strftime("%A, %B %d, %Y at %I:%M %p UTC")
         end_str = end_dt.strftime("%I:%M %p UTC")
-        self._gmail.send_message(
-            to=sender_email,
-            subject=f"Re: {approval.original_subject}",
-            body=render("meeting_confirmed", start_str=start_str, end_str=end_str),
-            reply_to_message_id=approval.original_message_id,
-        )
+        try:
+            self._gmail.send_message(
+                to=sender_email,
+                subject=f"Re: {approval.original_subject}",
+                body=render("meeting_confirmed", start_str=start_str, end_str=end_str),
+                reply_to_message_id=approval.original_message_id,
+            )
+        except Exception as exc:
+            # Event is already created; log the failure but don't crash — the
+            # requester will see the calendar invite even without this confirmation.
+            logger.error(f"Meeting created but failed to send confirmation to {sender_email}: {exc}")
 
         log_event(approval.original_email_id, "MEETING_CREATED", {
             "approval_id": approval.id,

@@ -182,3 +182,5 @@ pytest tests/ -v
 | `SLOT_STEP_MINUTES` | `30` | Free-slot search granularity |
 | `LOG_LEVEL` | `INFO` | `DEBUG` / `INFO` / `WARNING` / `ERROR` |
 | `LOG_FORMAT` | `text` | `text` (human-readable) or `json` (for log aggregators) |
+| `AUTO_DECLINE_SALES` | `true` | Set to `false` to suppress polite decline replies to sales emails |
+| `API_RETRIES` | `5` | Google API retry count on 429/5xx responses |

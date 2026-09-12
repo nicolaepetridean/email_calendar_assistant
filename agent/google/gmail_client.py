@@ -8,10 +8,11 @@ from typing import Optional
 from googleapiclient.discovery import build
 from google.oauth2.credentials import Credentials
 
+from agent.config import Config
+
 logger = logging.getLogger(__name__)
 
 MAX_UNREAD_FETCH = 20   # kept low to stay within Gmail quota (250 units/s)
-_API_RETRIES = 5        # passed to .execute() for automatic retry on 429/5xx
 
 
 def _decode_str(value: str) -> str:
@@ -71,7 +72,7 @@ class GmailClient:
             self._service.users()
             .messages()
             .list(userId="me", labelIds=["INBOX", "UNREAD"], maxResults=MAX_UNREAD_FETCH)
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         return [m["id"] for m in result.get("messages", [])]
 
@@ -80,7 +81,7 @@ class GmailClient:
             self._service.users()
             .messages()
             .get(userId="me", id=msg_id, format="full")
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         headers = {
             h["name"].lower(): h["value"]
@@ -107,7 +108,7 @@ class GmailClient:
 
         existing = (
             self._service.users().labels().list(userId="me")
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         for label in existing.get("labels", []):
             if label["name"] == label_name:
@@ -125,7 +126,7 @@ class GmailClient:
                     "messageListVisibility": "show",
                 },
             )
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         self._label_cache[label_name] = created["id"]
         logger.info(f"Created Gmail label: {label_name}")
@@ -135,29 +136,29 @@ class GmailClient:
         label_id = self.ensure_label_exists(label_name)
         self._service.users().messages().modify(
             userId="me", id=msg_id, body={"addLabelIds": [label_id]}
-        ).execute(num_retries=_API_RETRIES)
+        ).execute(num_retries=Config.API_RETRIES)
 
     def mark_as_read(self, msg_id: str) -> None:
         self._service.users().messages().modify(
             userId="me", id=msg_id, body={"removeLabelIds": ["UNREAD"]}
-        ).execute(num_retries=_API_RETRIES)
+        ).execute(num_retries=Config.API_RETRIES)
 
     def archive(self, msg_id: str) -> None:
         self._service.users().messages().modify(
             userId="me", id=msg_id, body={"removeLabelIds": ["INBOX"]}
-        ).execute(num_retries=_API_RETRIES)
+        ).execute(num_retries=Config.API_RETRIES)
 
     def flag_message(self, msg_id: str) -> None:
         self._service.users().messages().modify(
             userId="me", id=msg_id, body={"addLabelIds": ["STARRED"]}
-        ).execute(num_retries=_API_RETRIES)
+        ).execute(num_retries=Config.API_RETRIES)
 
     def move_to_spam(self, msg_id: str) -> None:
         self._service.users().messages().modify(
             userId="me",
             id=msg_id,
             body={"addLabelIds": ["SPAM"], "removeLabelIds": ["INBOX", "UNREAD"]},
-        ).execute(num_retries=_API_RETRIES)
+        ).execute(num_retries=Config.API_RETRIES)
 
     def send_message(
         self,
@@ -185,6 +186,6 @@ class GmailClient:
 
         result = (
             self._service.users().messages().send(userId="me", body=send_body)
-            .execute(num_retries=_API_RETRIES)
+            .execute(num_retries=Config.API_RETRIES)
         )
         return result["id"], result["threadId"]

@@ -87,10 +87,13 @@ class Classifier:
         self._client = client
 
     def classify(self, from_addr: str, subject: str, body: str) -> ClassificationResult:
+        def _esc(s: str) -> str:
+            return s.replace("{", "{{").replace("}", "}}")
+
         prompt = _USER_PROMPT.format(
-            from_addr=from_addr,
-            subject=subject,
-            body=body[:_BODY_TRUNCATION_CHARS],
+            from_addr=_esc(from_addr),
+            subject=_esc(subject),
+            body=_esc(body[:_BODY_TRUNCATION_CHARS]),
         )
 
         response = self._client.chat.completions.create(

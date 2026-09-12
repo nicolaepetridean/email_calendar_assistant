@@ -1,7 +1,6 @@
 import logging
-import re
 
-from agent.workflows.approval_flow import ApprovalFlow
+from agent.workflows.approval_flow import ApprovalFlow, _sender_email
 from agent.google.calendar_client import CalendarClient
 from agent.ai.classifier import Classifier, ClassificationResult
 from agent.config import Config
@@ -10,11 +9,6 @@ from agent.google.gmail_client import GmailClient
 from agent.templates import render
 
 logger = logging.getLogger(__name__)
-
-
-def _sender_email(from_field: str) -> str:
-    m = re.search(r"<([^>]+)>", from_field)
-    return m.group(1) if m else from_field.strip()
 
 
 class EmailOrchestrator:
